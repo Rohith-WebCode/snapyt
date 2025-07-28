@@ -1,0 +1,24 @@
+require('dotenv').config();
+const express = require('express')
+const app = express()
+const cors = require('cors')
+const summaryRoutes = require('./routes/summaryRoutes')
+const port =  5000
+
+
+
+app.use(cors())
+app.use(express.json())
+
+app.use('/api',summaryRoutes)
+
+app.get('/' , (req , res)=>{
+
+   res.send('hello from simple server :)')
+
+})
+
+
+app.get('/', (req, res) => res.send('Hello World!'))
+app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+
