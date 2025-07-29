@@ -1,5 +1,5 @@
 const { getTranscriptFromYoutube } = require('../services/youtubeService');
-const { summarizeText } = require('../services/openaiService');
+const { summarizeWithGemini } = require('../services/geminiSummarizer');
 
 const summarizeVideo =async (req,res)=>{
     const {url} = req.body
@@ -7,7 +7,12 @@ const summarizeVideo =async (req,res)=>{
     if(!url) return res.status(401).json({ error: "YouTube URL is required" });
     try {
         const transcript  = await getTranscriptFromYoutube(url)
-        const summary = await summarizeText(transcript)
+        console.log('this is', transcript);
+        
+        const summary = await summarizeWithGemini(transcript)
+        if(!summary){
+          return res.status(401).json({ error: "summary is not get" });
+        }
         res.status(200).json({summary})
     } catch (error) {
     console.error("Summarization error:", error.message);

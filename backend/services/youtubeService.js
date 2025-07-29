@@ -1,6 +1,6 @@
-const { getTranscript } = require('youtube-transcript');
+const { YoutubeTranscript } = require('youtube-transcript');
 
-const getTranscriptFromYoutube =async (url)=>{
+const getTranscriptFromYoutube = async (url) => {
   let videoId;
 
   try {
@@ -8,20 +8,31 @@ const getTranscriptFromYoutube =async (url)=>{
 
     // Handle both "youtu.be" and "youtube.com" URLs
     if (parsedUrl.hostname === 'youtu.be') {
-      videoId = parsedUrl.pathname.slice(1); // /eIrMbAQSU34 → eIrMbAQSU34
+      videoId = parsedUrl.pathname.slice(1);
     } else if (parsedUrl.hostname.includes('youtube.com')) {
       videoId = parsedUrl.searchParams.get('v');
     }
 
     if (!videoId) throw new Error("Invalid YouTube URL");
 
-    const transcriptData = await getTranscript(videoId);
+    const transcriptData = await YoutubeTranscript.fetchTranscript(videoId, { lang: 'en' });
 
-    return transcriptData.map(item => item.text).join(' ');
+    if (!transcriptData || transcriptData.length === 0) {
+      throw new Error("No transcript data found for this video.");
+    }
+
+    const fullTranscript = transcriptData.map(item => item.text).join(' ');
+  
+    if (fullTranscript.trim().length < 10) {
+      throw new Error("Transcript is too short or empty.");
+    }
+
+    return fullTranscript;
+
   } catch (error) {
-    throw new Error(`Transcript fetch error: ${error.message}`);
+    console.error("Transcript fetch error:", error.message);
+    return ''; // fallback to empty string
   }
-    return transcriptData.map(item => item.text).join(' ');
-}
+};
 
-module.exports =  {getTranscriptFromYoutube} ;
+module.exports = { getTranscriptFromYoutube };
